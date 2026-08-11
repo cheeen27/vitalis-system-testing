@@ -1,5 +1,7 @@
 # Vitalis 健康饮食追踪系统｜手工测试项目
 
+**[点击这里访问 Vitalis 测试网站](https://你的用户名.github.io/vitalis-manual-testing/)**
+
 ## 1. 项目简介
 
 Vitalis 是一个健康饮食与运动追踪 Web 应用，主要包含：
