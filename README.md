@@ -1,6 +1,6 @@
 # Vitalis 健康饮食追踪系统测试项目
 
-**[点击这里访问 Vitalis 测试网站](https://你的用户名.github.io/vitalis-system-testing/)**
+**[点击这里访问 Vitalis 测试网站](https://cheeen27.github.io/vitalis-system-testing/)**
 
 ## 1. 项目简介
 
