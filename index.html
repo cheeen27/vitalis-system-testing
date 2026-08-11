@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=1.5, viewport-fit=cover">
+  <title>Vitalis · 健康饮食追踪</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js">
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', 'Inter', 'Noto Sans SC', system-ui, -apple-system, sans-serif;
+    }
+    body {
+      background: linear-gradient(145deg, #f3f7fc 0%, #e9f0f5 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .app-container {
+      max-width: 1300px;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-radius: 42px;
+      box-shadow: 0 25px 45px -10px rgba(0, 30, 40, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+      padding: 28px 30px;
+      transition: all 0.2s ease;
+    }
+    .app-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    .logo-area h1 {
+      font-weight: 600;
+      font-size: 1.9rem;
+      letter-spacing: -0.5px;
+      color: #1a3e4c;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .logo-area i {
+      color: #2e856e;
+      background: white;
+      padding: 10px;
+      border-radius: 18px;
+      box-shadow: 0 6px 10px rgba(0,0,0,0.02);
+    }
+    .user-greeting {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+    .user-badge {
+      background: white;
+      padding: 10px 20px;
+      border-radius: 100px;
+      font-weight: 500;
+      color: #1e4b5e;
+      box-shadow: 0 6px 12px rgba(0,20,20,0.04);
+    }
+    .btn-outline {
+      background: transparent;
+      border: 1.5px solid #2e856e;
+      color: #2e856e;
+      padding: 10px 22px;
+      border-radius: 60px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: 0.2s;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+      white-space: nowrap;
+    }
+    .btn-outline:hover {
+      background: #2e856e;
+      color: white;
+      border-color: #2e856e;
+    }
+    .btn-solid {
+      background: #2e856e;
+      border: none;
+      color: white;
+      padding: 12px 26px;
+      border-radius: 60px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      box-shadow: 0 8px 16px rgba(46, 133, 110, 0.2);
+      transition: all 0.2s;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .btn-solid:hover {
+      background: #1e5f4e;
+      transform: translateY(-2px);
+      box-shadow: 0 14px 22px rgba(46, 133, 110, 0.25);
+    }
+    .btn-solid:disabled {
+      opacity: 0.6;
+      transform: none;
+      box-shadow: 0 4px 10px rgba(46, 133, 110, 0.1);
+      cursor: not-allowed;
+    }
+    .auth-card {
+      max-width: 520px;
+      margin: 40px auto;
+      background: rgba(255,255,255,0.5);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 38px;
+      padding: 36px 34px;
+      box-shadow: 0 20px 35px -8px rgba(0,30,30,0.1);
+    }
+    .auth-tabs {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+    .auth-tab {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #6b8a9a;
+      cursor: pointer;
+      padding-bottom: 8px;
+      border-bottom: 3px solid transparent;
+      transition: 0.2s;
+    }
+    .auth-tab.active {
+      color: #1a3e4c;
+      border-bottom: 3px solid #2e856e;
+    }
+    .input-group {
+      margin-bottom: 22px;
+    }
+    .input-group label {
+      display: block;
+      font-weight: 500;
+      color: #1f4b5c;
+      margin-bottom: 6px;
+    }
+    .input-group input, .input-group select {
+      width: 100%;
+      padding: 16px 18px;
+      font-size: 1rem;
+      background: white;
+      border: 1.5px solid rgba(46, 133, 110, 0.2);
+      border-radius: 28px;
+      outline: none;
+      transition: border 0.2s;
+    }
+    .input-group input:focus, .input-group select:focus {
+      border-color: #2e856e;
+    }
+    .captcha-row {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .captcha-row .input-group {
+      flex: 1;
+      margin-bottom: 0;
+    }
+    .captcha-canvas {
+      border-radius: 18px;
+      background: #f0f7f4;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+      cursor: pointer;
+      border: 1.5px solid rgba(46,133,110,0.15);
+      height: 56px;
+      width: 110px;
+      flex-shrink: 0;
+      transition: 0.2s;
+    }
+    .captcha-canvas:hover {
+      border-color: #2e856e;
+    }
+    .captcha-hint {
+      font-size: 0.8rem;
+      color: #5f7d8c;
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .form-hint {
+      font-size: 0.8rem;
+      color: #5f7d8c;
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .password-hint {
+      font-size: 0.8rem;
+      color: #5f7d8c;
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 20px 0 22px;
+      font-size: 0.9rem;
+      color: #1f4b5c;
+    }
+    .checkbox-group input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: #2e856e;
+      transform: scale(1.1);
+      cursor: pointer;
+    }
+    .checkbox-group label {
+      cursor: pointer;
+      user-select: none;
+    }
+    .agreement-link {
+      color: #2e856e;
+      text-decoration: underline;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .agreement-link:hover {
+      color: #1e5f4e;
+    }
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+    .modal-content {
+      background: white;
+      border-radius: 32px;
+      max-width: 600px;
+      width: 100%;
+      max-height: 80vh;
+      box-shadow: 0 30px 50px rgba(0, 20, 30, 0.3);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .modal-header {
+      padding: 24px 28px 16px;
+      border-bottom: 1px solid #e8f0ed;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-header h3 {
+      font-size: 1.4rem;
+      color: #1a3e4c;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .modal-close-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: none;
+      background: #f0f4f6;
+      color: #4e6e7e;
+      font-size: 1.2rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.2s;
+    }
+    .modal-close-btn:hover {
+      background: #e0e8ec;
+      color: #1a3e4c;
+    }
+    .modal-body {
+      padding: 20px 28px 28px;
+      overflow-y: auto;
+      line-height: 1.7;
+      color: #2d4a55;
+    }
+    .modal-body h4 {
+      margin: 18px 0 8px;
+      color: #1a3e4c;
+      font-size: 1.05rem;
+    }
+    .modal-body p {
+      margin-bottom: 12px;
+    }
+    .modal-footer {
+      padding: 16px 28px 24px;
+      display: flex;
+      justify-content: flex-end;
+    }
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 28px;
+      margin-top: 10px;
+    }
+    .card {
+      background: rgba(255,255,255,0.6);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      border-radius: 28px;
+      padding: 24px 26px;
+      box-shadow: 0 10px 20px -5px rgba(0, 20, 20, 0.05);
+      border: 1px solid rgba(255,255,255,0.7);
+    }
+    .card-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 600;
+      font-size: 1.4rem;
+      color: #1a3e4c;
+      margin-bottom: 22px;
+    }
+    .goal-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(105deg, #d2ece4 0%, #e3f3ed 100%);
+      border-radius: 24px;
+      padding: 18px 22px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .record-form input, .record-form select {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 40px;
+      border: 1px solid #cbdbe3;
+      background: white;
+      margin-bottom: 14px;
+      font-size: 0.95rem;
+    }
+    .double-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .mini-list {
+      margin-top: 16px;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+    .list-item {
+      background: white;
+      border-radius: 60px;
+      padding: 10px 18px;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+      flex-wrap: wrap;
+    }
+    .stat-highlight {
+      font-size: 2.8rem;
+      font-weight: 700;
+      color: #154e42;
+    }
+    .chart-container {
+      margin: 25px 0 15px;
+      height: 190px;
+    }
+    .hidden {
+      display: none !important;
+    }
+    .report-area {
+      background: #eef6f3;
+      border-radius: 24px;
+      padding: 20px;
+      margin: 25px 0 5px;
+    }
+    .inline-icon {
+      margin-right: 8px;
+      color: #2e856e;
+    }
+    .goal-select-group {
+      margin: 12px 0 18px;
+    }
+    .goal-select-group select, .goal-select-group input {
+      width: 100%;
+      padding: 14px 18px;
+      font-size: 1rem;
+      background: white;
+      border: 1.5px solid rgba(46, 133, 110, 0.2);
+      border-radius: 28px;
+      outline: none;
+      margin-bottom: 10px;
+    }
+    input[type="date"]::-webkit-clear-button {
+      display: none !important;
+      -webkit-appearance: none !important;
+      appearance: none !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+    }
+    input[type="date"]::-ms-clear {
+      display: none !important;
+    }
+    @media (max-width: 750px) {
+      .dashboard-grid { grid-template-columns: 1fr; }
+      .app-container { padding: 18px; }
+      .modal-content { max-width: 95%; }
+    }
+    .text-small {
+      font-size: 0.9rem;
+      color: #4e6e7e;
+    }
+    .goal-display-inline {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .report-advice {
+      background: #fff8e1;
+      border-left: 4px solid #f0ad4e;
+      padding: 12px 16px;
+      border-radius: 12px;
+      margin-top: 12px;
+    }
+    .report-advice.good {
+      background: #e8f5e9;
+      border-left-color: #4caf50;
+    }
+    .report-advice.warning {
+      background: #fff3e0;
+      border-left-color: #ff9800;
+    }
+    .report-advice.danger {
+      background: #ffebee;
+      border-left-color: #f44336;
+    }
+    .report-advice.no-data {
+      background: #f5f5f5;
+      border-left-color: #9e9e9e;
+    }
+    .bottom-actions {
+      margin-top: 25px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+<body>
+<div class="app-container" id="appContainer">
+  <div class="app-header">
+    <div class="logo-area">
+      <h1><i class="fas fa-heart-pulse"></i> Vitalis</h1>
+    </div>
+    <div class="user-greeting" id="authHeaderArea"></div>
+  </div>
+
+  <div id="authPanel" class="auth-card">
+    <div class="auth-tabs">
+      <span id="tabLogin" class="auth-tab active"><i class="fas fa-sign-in-alt inline-icon"></i>登录</span>
+      <span id="tabRegister" class="auth-tab"><i class="fas fa-user-plus inline-icon"></i>注册</span>
+    </div>
+    <div id="loginForm">
+      <div class="input-group">
+        <label>手机号</label>
+        <input type="tel" id="loginPhone" placeholder="请输入手机号" value="13800138000">
+      </div>
+      <div class="input-group">
+        <label>密码</label>
+        <input type="password" id="loginPassword" placeholder="输入密码" value="demo123">
+      </div>
+      <div class="input-group">
+        <label>图片验证码</label>
+        <div class="captcha-row">
+          <div class="input-group" style="margin-bottom:0;">
+            <input type="text" id="loginCaptchaInput" placeholder="请输入验证码" maxlength="4" autocomplete="off">
+          </div>
+          <canvas id="loginCaptchaCanvas" class="captcha-canvas" width="110" height="56" title="点击刷新验证码"></canvas>
+        </div>
+        <div class="captcha-hint"><i class="fas fa-sync-alt"></i> 点击图片刷新验证码</div>
+      </div>
+      <button class="btn-solid" style="width:100%;" id="loginBtn"><i class="fas fa-arrow-right-to-bracket"></i> 登录</button>
+      <p class="text-small" style="margin-top:16px;">演示账号：13800138000 / demo123</p>
+    </div>
+    <div id="registerForm" class="hidden">
+      <div class="input-group">
+        <label>用户名</label>
+        <input type="text" id="regUsername" placeholder="例如：健身达人_2024" maxlength="16">
+        <div class="form-hint"><i class="fas fa-info-circle"></i> 支持中文、英文、数字及符号 _ - . @ ，长度4-16位</div>
+      </div>
+      <div class="input-group">
+        <label>手机号</label>
+        <input type="tel" id="regPhone" placeholder="请输入11位手机号">
+      </div>
+      <div class="input-group">
+        <label>密码</label>
+        <input type="password" id="regPassword" placeholder="设置密码">
+        <div class="password-hint"><i class="fas fa-info-circle"></i> 须包含字母+数字，长度6-16位</div>
+      </div>
+      <div class="input-group">
+        <label>图片验证码</label>
+        <div class="captcha-row">
+          <div class="input-group" style="margin-bottom:0;">
+            <input type="text" id="regCaptchaInput" placeholder="请输入验证码" maxlength="4" autocomplete="off">
+          </div>
+          <canvas id="regCaptchaCanvas" class="captcha-canvas" width="110" height="56" title="点击刷新验证码"></canvas>
+        </div>
+        <div class="captcha-hint"><i class="fas fa-sync-alt"></i> 点击图片刷新验证码</div>
+      </div>
+      <div class="checkbox-group">
+        <input type="checkbox" id="agreeCheckbox">
+        <label for="agreeCheckbox">我已阅读并同意 <span class="agreement-link" id="openAgreementBtn">《用户服务协议》</span></label>
+      </div>
+      <button class="btn-solid" style="width:100%;" id="registerBtn"><i class="fas fa-check"></i> 创建账户</button>
+    </div>
+  </div>
+
+  <div id="dashboardPanel" class="hidden">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:10px;">
+      <h2 style="color:#1a3e4c;"><i class="fas fa-compass"></i> 健康看板</h2>
+      <button class="btn-outline" id="logoutMainBtn"><i class="fas fa-sign-out-alt"></i> 退出登录</button>
+    </div>
+    <div class="goal-card" id="goalDisplayCard">
+      <div class="goal-display-inline"><i class="fas fa-bullseye"></i> <strong>当前目标：</strong> <span id="goalText">维持体重</span></div>
+      <button class="btn-outline" style="padding:8px 20px;" id="editGoalBtn"><i class="fas fa-pen"></i> 修改目标</button>
+    </div>
+
+    <div class="dashboard-grid">
+      <div>
+        <div class="card">
+          <div class="card-title"><i class="fas fa-utensils"></i> 记录饮食</div>
+          <div class="record-form">
+            <input type="text" id="foodName" placeholder="食物名称（例如：燕麦粥）" maxlength="30">
+            <div class="double-col">
+              <input type="number" id="foodCalories" placeholder="卡路里（千卡）" min="1" max="5000" step="1">
+              <input type="date" id="foodDate">
+            </div>
+            <button class="btn-solid" style="width:100%;" id="addDietBtn"><i class="fas fa-plus-circle"></i> 添加饮食</button>
+          </div>
+          <div class="mini-list" id="dietListContainer"></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fas fa-person-running"></i> 记录运动</div>
+          <div class="record-form">
+            <input type="text" id="exerciseName" placeholder="运动类型（例如：跑步、瑜伽）" maxlength="30">
+            <div class="double-col">
+              <input type="number" id="exerciseCalories" placeholder="消耗卡路里（千卡）" min="1" max="5000" step="1">
+              <input type="date" id="exerciseDate">
+            </div>
+            <button class="btn-solid" style="width:100%;" id="addExerciseBtn"><i class="fas fa-fire"></i> 添加运动</button>
+          </div>
+          <div class="mini-list" id="exerciseListContainer"></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="card">
+          <div class="card-title"><i class="fas fa-chart-pie"></i> 今日概览</div>
+          <div style="display:flex; justify-content:space-around; flex-wrap:wrap; gap:10px;">
+            <div><span class="stat-highlight" id="todayCaloriesIn">0</span><span class="text-small">摄入/千卡</span></div>
+            <div><span class="stat-highlight" id="todayCaloriesOut">0</span><span class="text-small">消耗/千卡</span></div>
+            <div><span class="stat-highlight" id="netCalories">0</span><span class="text-small">净差值</span></div>
+          </div>
+          <div class="chart-container">
+            <canvas id="weeklyChart"></canvas>
+          </div>
+          <div style="display:flex; gap:20px; justify-content:center; flex-wrap:wrap;">
+            <button class="btn-outline" id="generateWeekReport"><i class="fas fa-file-alt"></i> 周报</button>
+          </div>
+          <div id="reportOutput" class="report-area hidden">
+            <strong><i class="fas fa-clipboard-list"></i> 健康报告</strong>
+            <div id="reportContent" style="margin-top:12px;">加载中...</div>
+          </div>
+        </div>
+        <div class="bottom-actions">
+          <button class="btn-outline" id="refreshStatsBtn"><i class="fas fa-rotate"></i> 刷新数据</button>
+          <span class="text-small">依据中国居民膳食指南</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="agreementModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3><i class="fas fa-file-contract" style="color:#2e856e;"></i> 用户服务协议</h3>
+      <button class="modal-close-btn" id="closeAgreementModal"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <p><strong>最后更新日期：2026年4月14日</strong></p>
+      <p>欢迎使用 Vitalis 健康饮食追踪服务。请您仔细阅读以下条款，使用本服务即表示您同意本协议的全部内容。</p>
+      <h4>一、服务说明</h4>
+      <p>Vitalis 提供个人健康数据记录、饮食运动追踪及统计分析功能。本服务仅供个人健康管理使用，不构成医疗建议。</p>
+      <h4>二、用户责任</h4>
+      <p>1. 您需提供真实、准确的注册信息，并妥善保管账号密码。</p>
+      <p>2. 用户名支持中文、英文大小写、数字及符号（_ - . @），长度需在4-16位之间。</p>
+      <p>3. 饮食名称和运动类型需包含至少一个中文字、英文字母或具有实际意义的文字，不能为纯数字或纯符号。</p>
+      <h4>三、隐私保护</h4>
+      <p>您的个人健康数据仅存储在本地浏览器中，不会上传至任何远程服务器。</p>
+      <h4>四、免责声明</h4>
+      <p>本服务按"现状"提供，卡路里估算仅供参考，不构成医疗建议。</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-solid" id="acceptAgreementBtn"><i class="fas fa-check"></i> 我已阅读并同意</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="goalModal">
+  <div class="modal-content" style="max-width: 450px;">
+    <div class="modal-header">
+      <h3><i class="fas fa-bullseye" style="color:#2e856e;"></i> 设置健康目标</h3>
+      <button class="modal-close-btn" id="closeGoalModal"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="goal-select-group">
+        <label style="font-weight:500; color:#1f4b5c; display:block; margin-bottom:8px;">选择目标类型</label>
+        <select id="goalTypeSelect">
+          <option value="减重">减重</option>
+          <option value="增重">增重</option>
+          <option value="维持体重">维持体重</option>
+        </select>
+      </div>
+      <div class="goal-select-group" id="goalValueGroup">
+        <label style="font-weight:500; color:#1f4b5c; display:block; margin-bottom:8px;">目标公斤数</label>
+        <input type="number" id="goalValueInput" placeholder="例如：5" min="0.5" step="0.5" value="3">
+      </div>
+      <p id="goalMaintainHint" class="text-small hidden" style="margin-top:8px;">选择"维持体重"无需设置目标公斤数</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-outline" style="margin-right:10px;" id="cancelGoalBtn">取消</button>
+      <button class="btn-solid" id="saveGoalBtn"><i class="fas fa-check"></i> 保存目标</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function() {
+    "use strict";
+
+    let Users = [];
+    let DietRecords = [];
+    let ExerciseRecords = [];
+    let Goals = [];
+    let nextUserId = 1, nextDietId = 1, nextExerciseId = 1, nextGoalId = 1;
+    let currentUser = null;
+
+    let loginCaptchaText = '';
+    let regCaptchaText = '';
+
+    function initializeDemoData() {
+      if (Users.length === 0) {
+        const demoUser = { user_id: nextUserId++, username: '健康达人_Demo', phone: '13800138000', password: 'demo123' };
+        Users.push(demoUser);
+        Goals.push({ goal_id: nextGoalId++, user_id: demoUser.user_id, target_type: '减重', target_value: 5 });
+      }
+    }
+    initializeDemoData();
+
+    const authPanel = document.getElementById('authPanel');
+    const dashboardPanel = document.getElementById('dashboardPanel');
+    const authHeaderArea = document.getElementById('authHeaderArea');
+    const loginFormDiv = document.getElementById('loginForm');
+    const registerFormDiv = document.getElementById('registerForm');
+    const tabLogin = document.getElementById('tabLogin');
+    const tabRegister = document.getElementById('tabRegister');
+    const loginBtn = document.getElementById('loginBtn');
+    const registerBtn = document.getElementById('registerBtn');
+    const agreeCheckbox = document.getElementById('agreeCheckbox');
+    const openAgreementBtn = document.getElementById('openAgreementBtn');
+    const agreementModal = document.getElementById('agreementModal');
+    const closeAgreementModal = document.getElementById('closeAgreementModal');
+    const acceptAgreementBtn = document.getElementById('acceptAgreementBtn');
+    const logoutMainBtn = document.getElementById('logoutMainBtn');
+    const dietList = document.getElementById('dietListContainer');
+    const exerciseList = document.getElementById('exerciseListContainer');
+    const addDietBtn = document.getElementById('addDietBtn');
+    const addExerciseBtn = document.getElementById('addExerciseBtn');
+    const foodNameInp = document.getElementById('foodName');
+    const foodCalInp = document.getElementById('foodCalories');
+    const foodDateInp = document.getElementById('foodDate');
+    const exerciseNameInp = document.getElementById('exerciseName');
+    const exerciseCalInp = document.getElementById('exerciseCalories');
+    const exerciseDateInp = document.getElementById('exerciseDate');
+    const todayCalInSpan = document.getElementById('todayCaloriesIn');
+    const todayCalOutSpan = document.getElementById('todayCaloriesOut');
+    const netCalSpan = document.getElementById('netCalories');
+    const goalTextSpan = document.getElementById('goalText');
+    const editGoalBtn = document.getElementById('editGoalBtn');
+    const generateWeek = document.getElementById('generateWeekReport');
+    const reportOutputDiv = document.getElementById('reportOutput');
+    const reportContent = document.getElementById('reportContent');
+    const refreshBtn = document.getElementById('refreshStatsBtn');
+    const goalModal = document.getElementById('goalModal');
+    const closeGoalModalBtn = document.getElementById('closeGoalModal');
+    const cancelGoalBtn = document.getElementById('cancelGoalBtn');
+    const saveGoalBtn = document.getElementById('saveGoalBtn');
+    const goalTypeSelect = document.getElementById('goalTypeSelect');
+    const goalValueInput = document.getElementById('goalValueInput');
+    const goalValueGroup = document.getElementById('goalValueGroup');
+    const goalMaintainHint = document.getElementById('goalMaintainHint');
+
+    const loginCaptchaCanvas = document.getElementById('loginCaptchaCanvas');
+    const regCaptchaCanvas = document.getElementById('regCaptchaCanvas');
+    const loginCaptchaInput = document.getElementById('loginCaptchaInput');
+    const regCaptchaInput = document.getElementById('regCaptchaInput');
+
+    let weeklyChartInstance = null;
+
+    function generateRandomCaptchaText(length = 4) {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+      let result = '';
+      for (let i = 0; i < length; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return result;
+    }
+
+    function drawCaptcha(canvas, text) {
+      if (!canvas || !text) return;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#f4faf7';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      for (let i = 0; i < 12; i++) {
+        ctx.strokeStyle = `rgba(46,133,110,${0.1 + Math.random() * 0.25})`;
+        ctx.beginPath();
+        ctx.moveTo(Math.random() * canvas.width, Math.random() * canvas.height);
+        ctx.lineTo(Math.random() * canvas.width, Math.random() * canvas.height);
+        ctx.stroke();
+      }
+      for (let i = 0; i < 50; i++) {
+        ctx.fillStyle = `rgba(30,80,70,${0.15 + Math.random() * 0.2})`;
+        ctx.beginPath();
+        ctx.arc(Math.random() * canvas.width, Math.random() * canvas.height, 1 + Math.random() * 1.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.font = 'bold 26px "Segoe UI", "Inter", "Noto Sans SC"';
+      ctx.fillStyle = '#1a3e4c';
+      ctx.textBaseline = 'middle';
+      const chars = text.split('');
+      const spacing = canvas.width / (chars.length + 1);
+      chars.forEach((char, idx) => {
+        const x = spacing * (idx + 1) + (Math.random() - 0.5) * 8;
+        const y = canvas.height / 2 + (Math.random() - 0.5) * 12;
+        const angle = (Math.random() - 0.5) * 0.25;
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(angle);
+        ctx.fillText(char, -12, 0);
+        ctx.restore();
+      });
+    }
+
+    function refreshLoginCaptcha() {
+      loginCaptchaText = generateRandomCaptchaText(4);
+      drawCaptcha(loginCaptchaCanvas, loginCaptchaText);
+    }
+    function refreshRegCaptcha() {
+      regCaptchaText = generateRandomCaptchaText(4);
+      drawCaptcha(regCaptchaCanvas, regCaptchaText);
+    }
+
+    if (loginCaptchaCanvas) loginCaptchaCanvas.addEventListener('click', refreshLoginCaptcha);
+    if (regCaptchaCanvas) regCaptchaCanvas.addEventListener('click', refreshRegCaptcha);
+
+    function openAgreementModal() { agreementModal.classList.add('active'); document.body.style.overflow = 'hidden'; }
+    function closeAgreementModalFunc() { agreementModal.classList.remove('active'); document.body.style.overflow = ''; }
+    function openGoalModal() {
+      if (!currentUser) return;
+      const goal = getUserGoal(currentUser.user_id);
+      goalTypeSelect.value = goal.target_type;
+      if (goal.target_type === '维持体重') { goalValueGroup.classList.add('hidden'); goalMaintainHint.classList.remove('hidden'); }
+      else { goalValueGroup.classList.remove('hidden'); goalMaintainHint.classList.add('hidden'); goalValueInput.value = goal.target_value || 3; }
+      goalModal.classList.add('active'); document.body.style.overflow = 'hidden';
+    }
+    function closeGoalModalFunc() { goalModal.classList.remove('active'); document.body.style.overflow = ''; }
+
+    openAgreementBtn.addEventListener('click', (e) => { e.preventDefault(); openAgreementModal(); });
+    closeAgreementModal.addEventListener('click', closeAgreementModalFunc);
+    acceptAgreementBtn.addEventListener('click', () => { agreeCheckbox.checked = true; closeAgreementModalFunc(); });
+    agreementModal.addEventListener('click', (e) => { if (e.target === agreementModal) closeAgreementModalFunc(); });
+    editGoalBtn.addEventListener('click', openGoalModal);
+    closeGoalModalBtn.addEventListener('click', closeGoalModalFunc);
+    cancelGoalBtn.addEventListener('click', closeGoalModalFunc);
+    goalModal.addEventListener('click', (e) => { if (e.target === goalModal) closeGoalModalFunc(); });
+    goalTypeSelect.addEventListener('change', () => {
+      if (goalTypeSelect.value === '维持体重') { goalValueGroup.classList.add('hidden'); goalMaintainHint.classList.remove('hidden'); }
+      else { goalValueGroup.classList.remove('hidden'); goalMaintainHint.classList.add('hidden'); }
+    });
+    saveGoalBtn.addEventListener('click', () => {
+      if (!currentUser) return;
+      const selectedType = goalTypeSelect.value;
+      let targetValue = 0;
+      if (selectedType === '减重' || selectedType === '增重') {
+        targetValue = parseFloat(goalValueInput.value);
+        if (!targetValue || targetValue <= 0) { alert('请输入有效的目标公斤数（大于0）'); return; }
+      }
+      const goalIdx = Goals.findIndex(g => g.user_id === currentUser.user_id);
+      if (goalIdx > -1) Goals[goalIdx] = { ...Goals[goalIdx], target_type: selectedType, target_value: targetValue };
+      updateGoalDisplay(); closeGoalModalFunc();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') { if (agreementModal.classList.contains('active')) closeAgreementModalFunc(); if (goalModal.classList.contains('active')) closeGoalModalFunc(); }
+    });
+
+    function getTodayStr() {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    }
+
+    function validateName(name) {
+      if (!name || name.length < 2 || name.length > 30) return false;
+      const hasChinese = /[\u4e00-\u9fa5]/.test(name);
+      const hasEnglish = /[a-zA-Z]/.test(name);
+      if (!hasChinese && !hasEnglish) return false;
+      return true;
+    }
+
+    function getUserGoal(userId) { return Goals.find(g => g.user_id === userId) || { target_type: '维持体重', target_value: 0 }; }
+    function updateGoalDisplay() {
+      if (!currentUser) return;
+      const goal = getUserGoal(currentUser.user_id);
+      if (goal.target_type === '减重') goalTextSpan.innerText = `减重 ${goal.target_value} 公斤`;
+      else if (goal.target_type === '增重') goalTextSpan.innerText = `增重 ${goal.target_value} 公斤`;
+      else goalTextSpan.innerText = '维持体重';
+    }
+    function loadDashboardData() { updateGoalDisplay(); }
+
+    function renderDietExerciseLists() {
+      if (!currentUser) return;
+      const uid = currentUser.user_id;
+      const userDiets = DietRecords.filter(d => d.user_id === uid).sort((a,b) => b.date.localeCompare(a.date));
+      const userEx = ExerciseRecords.filter(e => e.user_id === uid).sort((a,b) => b.date.localeCompare(a.date));
+      dietList.innerHTML = userDiets.slice(0,6).map(d => `<div class="list-item"><span><i class="fas fa-apple-alt inline-icon"></i>${d.food_name}</span><span>${d.calories} 千卡 · ${d.date}</span></div>`).join('') || '<div class="text-small">暂无饮食记录，快去添加吧！</div>';
+      exerciseList.innerHTML = userEx.slice(0,6).map(e => `<div class="list-item"><span><i class="fas fa-dumbbell inline-icon"></i>${e.type}</span><span>${e.calories_burned} 千卡 · ${e.date}</span></div>`).join('') || '<div class="text-small">暂无运动记录，快去运动吧！</div>';
+    }
+
+    function updateStatisticsAndChart() {
+      if (!currentUser) return;
+      const uid = currentUser.user_id;
+      const today = getTodayStr();
+      const todayDiets = DietRecords.filter(d => d.user_id === uid && d.date === today);
+      const todayEx = ExerciseRecords.filter(e => e.user_id === uid && e.date === today);
+      const inCal = todayDiets.reduce((acc,d) => acc + Number(d.calories), 0);
+      const outCal = todayEx.reduce((acc,e) => acc + Number(e.calories_burned), 0);
+      todayCalInSpan.innerText = inCal; todayCalOutSpan.innerText = outCal; netCalSpan.innerText = inCal - outCal;
+      const dates = [], netVals = [];
+      for (let i=6; i>=0; i--) {
+        const d = new Date(); d.setDate(d.getDate()-i);
+        const ds = d.toISOString().slice(0,10);
+        dates.push(ds.slice(5));
+        const dayDiets = DietRecords.filter(r => r.user_id===uid && r.date===ds).reduce((s,r)=>s+Number(r.calories),0);
+        const dayEx = ExerciseRecords.filter(r => r.user_id===uid && r.date===ds).reduce((s,r)=>s+Number(r.calories_burned),0);
+        netVals.push(dayDiets - dayEx);
+      }
+      if (weeklyChartInstance) weeklyChartInstance.destroy();
+      weeklyChartInstance = new Chart(document.getElementById('weeklyChart').getContext('2d'), {
+        type: 'line', data: { labels: dates, datasets: [{ label: '净卡路里 (千卡)', data: netVals, borderColor: '#2e856e', backgroundColor: 'rgba(46,133,110,0.08)', tension: 0.2, fill: true, pointBackgroundColor: '#1e5f4e' }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+      });
+    }
+
+    function hasAnyRecords(userId) { return DietRecords.some(d => d.user_id === userId) || ExerciseRecords.some(e => e.user_id === userId); }
+
+    function getSmartAdvice(netCalories, goalType, goalValue, totalIn, totalOut, days) {
+      const dailyAvgNet = netCalories / days; let adviceText = '', adviceClass = '';
+      if (goalType === '减重') {
+        if (dailyAvgNet <= -500) { adviceText = `🏆 非常好！日均净摄入${dailyAvgNet.toFixed(0)}千卡，处于健康减重区间。`; adviceClass = 'good'; }
+        else if (dailyAvgNet <= -200) { adviceText = `👍 表现不错！日均净摄入${dailyAvgNet.toFixed(0)}千卡，有轻微热量缺口。`; adviceClass = 'good'; }
+        else if (dailyAvgNet <= 200) { adviceText = `⚖️ 热量基本平衡。日均净摄入${dailyAvgNet.toFixed(0)}千卡，减重效果不明显。`; adviceClass = 'warning'; }
+        else if (dailyAvgNet <= 500) { adviceText = `⚠️ 热量盈余明显！日均净摄入${dailyAvgNet.toFixed(0)}千卡，与减重目标相悖。`; adviceClass = 'warning'; }
+        else { adviceText = `🚨 热量严重超标！日均净摄入${dailyAvgNet.toFixed(0)}千卡，远高于减重所需。`; adviceClass = 'danger'; }
+      } else if (goalType === '增重') {
+        if (dailyAvgNet >= 500) { adviceText = `🏆 增重效果显著！日均净摄入${dailyAvgNet.toFixed(0)}千卡。`; adviceClass = 'good'; }
+        else if (dailyAvgNet >= 200) { adviceText = `👍 增重趋势良好！日均净摄入${dailyAvgNet.toFixed(0)}千卡。`; adviceClass = 'good'; }
+        else if (dailyAvgNet >= -200) { adviceText = `⚖️ 热量基本平衡。日均净摄入${dailyAvgNet.toFixed(0)}千卡，增重效果不明显。`; adviceClass = 'warning'; }
+        else if (dailyAvgNet >= -500) { adviceText = `⚠️ 热量不足！日均净摄入${dailyAvgNet.toFixed(0)}千卡，与增重目标不符。`; adviceClass = 'warning'; }
+        else { adviceText = `🚨 严重热量不足！日均净摄入${dailyAvgNet.toFixed(0)}千卡。`; adviceClass = 'danger'; }
+      } else if (goalType === '维持体重') {
+        if (Math.abs(dailyAvgNet) <= 150) { adviceText = `🏆 维持得非常好！日均净摄入${dailyAvgNet.toFixed(0)}千卡。`; adviceClass = 'good'; }
+        else if (Math.abs(dailyAvgNet) <= 300) { adviceText = `👍 体重基本稳定。日均净摄入${dailyAvgNet.toFixed(0)}千卡。`; adviceClass = 'good'; }
+        else if (Math.abs(dailyAvgNet) <= 500) { adviceText = `⚖️ 热量${dailyAvgNet>0?'盈余':'缺口'}偏大。日均净摄入${dailyAvgNet.toFixed(0)}千卡。`; adviceClass = 'warning'; }
+        else { adviceText = `🚨 热量${dailyAvgNet>0?'严重超标':'严重不足'}！日均净摄入${dailyAvgNet.toFixed(0)}千卡。`; adviceClass = 'danger'; }
+      }
+      return { text: adviceText, class: adviceClass };
+    }
+
+    function generateReport() {
+      if (!currentUser) return;
+      const uid = currentUser.user_id;
+      if (!hasAnyRecords(uid)) { reportContent.innerHTML = `<div style="text-align:center;padding:20px;"><i class="fas fa-clipboard-list" style="font-size:3rem;color:#9e9e9e;margin-bottom:12px;display:block;"></i><strong>暂无数据</strong><p class="text-small" style="margin-top:8px;">您还没有记录任何饮食或运动数据。</p></div>`; reportOutputDiv.classList.remove('hidden'); return; }
+      const days = 7; 
+      const end = new Date(); const start = new Date(); start.setDate(end.getDate() - days + 1);
+      let totalIn = 0, totalOut = 0;
+      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        const ds = d.toISOString().slice(0, 10);
+        totalIn += DietRecords.filter(r => r.user_id === uid && r.date === ds).reduce((a, b) => a + Number(b.calories), 0);
+        totalOut += ExerciseRecords.filter(r => r.user_id === uid && r.date === ds).reduce((a, b) => a + Number(b.calories_burned), 0);
+      }
+      if (totalIn === 0 && totalOut === 0) { reportContent.innerHTML = `<div style="text-align:center;padding:20px;"><i class="fas fa-calendar-times" style="font-size:3rem;color:#9e9e9e;margin-bottom:12px;display:block;"></i><strong>报告周期内无数据</strong></div>`; reportOutputDiv.classList.remove('hidden'); return; }
+      const goal = getUserGoal(uid); const net = totalIn - totalOut;
+      const advice = getSmartAdvice(net, goal.target_type, goal.target_value, totalIn, totalOut, days);
+      reportContent.innerHTML = `<strong>📊 周度健康报告</strong><br>
+        <div style="margin-top:10px;">🥗 总摄入：<strong>${totalIn}</strong> 千卡 | 🔥 总消耗：<strong>${totalOut}</strong> 千卡</div>
+        <div>⚖️ 净差值：<strong>${net}</strong> 千卡（日均 ${(net/days).toFixed(0)} 千卡）</div>
+        <div>🎯 当前目标：<strong>${goal.target_type==='维持体重'?'维持体重':goal.target_type+' '+goal.target_value+' 公斤'}</strong></div>
+        <div class="report-advice ${advice.class}" style="margin-top:12px;"><div style="font-weight:600;">💡 健康建议</div><div>${advice.text}</div></div>`;
+      reportOutputDiv.classList.remove('hidden');
+    }
+
+    function validateUsername(username) { return typeof username === 'string' && username.length >= 4 && username.length <= 16 && /^[\u4e00-\u9fa5a-zA-Z0-9_\-\.@]+$/.test(username); }
+    function validatePhone(phone) { return /^1[3-9]\d{9}$/.test(phone); }
+    function validatePassword(pwd) { return typeof pwd === 'string' && pwd.length >= 6 && pwd.length <= 16 && /[a-zA-Z]/.test(pwd) && /[0-9]/.test(pwd); }
+
+    function updateAuthUI() {
+      if (currentUser) {
+        authPanel.classList.add('hidden'); dashboardPanel.classList.remove('hidden');
+        authHeaderArea.innerHTML = `<span class="user-badge"><i class="fas fa-user-circle"></i> ${currentUser.username}</span>`;
+        loadDashboardData(); renderDietExerciseLists(); updateStatisticsAndChart();
+      } else {
+        authPanel.classList.remove('hidden'); dashboardPanel.classList.add('hidden');
+        authHeaderArea.innerHTML = `<span class="user-badge"><i class="fas fa-lock"></i> 请登录以追踪健康</span>`;
+        if (agreeCheckbox) agreeCheckbox.checked = false;
+      }
+    }
+
+    tabLogin.addEventListener('click', ()=>{
+      tabLogin.classList.add('active'); tabRegister.classList.remove('active');
+      loginFormDiv.classList.remove('hidden'); registerFormDiv.classList.add('hidden');
+      refreshLoginCaptcha(); loginCaptchaInput.value = '';
+    });
+    tabRegister.addEventListener('click', ()=>{
+      tabRegister.classList.add('active'); tabLogin.classList.remove('active');
+      registerFormDiv.classList.remove('hidden'); loginFormDiv.classList.add('hidden');
+      refreshRegCaptcha(); regCaptchaInput.value = '';
+    });
+
+    loginBtn.addEventListener('click', ()=>{
+      const phone = document.getElementById('loginPhone').value.trim();
+      const pwd = document.getElementById('loginPassword').value;
+      const captchaInput = loginCaptchaInput.value.trim();
+      if (!phone||!pwd) { alert('请输入手机号和密码'); return; }
+      if (!captchaInput) { alert('请输入图片验证码'); refreshLoginCaptcha(); return; }
+      if (captchaInput.toLowerCase() !== loginCaptchaText.toLowerCase()) {
+        alert('验证码错误，请重新输入');
+        refreshLoginCaptcha();
+        loginCaptchaInput.value = '';
+        return;
+      }
+      const user = Users.find(u=>u.phone===phone&&u.password===pwd);
+      if (user) {
+        currentUser = { user_id: user.user_id, username: user.username, phone: user.phone };
+        updateAuthUI();
+        loginCaptchaInput.value = '';
+        refreshLoginCaptcha();
+      } else {
+        alert('手机号或密码错误。演示账号：13800138000 / demo123');
+        refreshLoginCaptcha();
+        loginCaptchaInput.value = '';
+      }
+    });
+
+    registerBtn.addEventListener('click', ()=>{
+      const username = document.getElementById('regUsername').value.trim();
+      const phone = document.getElementById('regPhone').value.trim();
+      const pwd = document.getElementById('regPassword').value;
+      const captchaInput = regCaptchaInput.value.trim();
+      const agreed = agreeCheckbox.checked;
+      if (!username||!phone||!pwd) { alert('请完整填写用户名、手机号和密码'); return; }
+      if (!validateUsername(username)) { alert('用户名不符合规则：支持中文、英文大小写、数字及符号（_ - . @），长度需在4-16位之间。'); return; }
+      if (!validatePhone(phone)) { alert('请输入正确的11位中国大陆手机号（1开头）'); return; }
+      if (!validatePassword(pwd)) { alert('密码不符合规则：必须包含字母和数字，且长度为6-16位。'); return; }
+      if (!captchaInput) { alert('请输入图片验证码'); refreshRegCaptcha(); return; }
+      if (captchaInput.toLowerCase() !== regCaptchaText.toLowerCase()) {
+        alert('验证码错误，请重新输入');
+        refreshRegCaptcha();
+        regCaptchaInput.value = '';
+        return;
+      }
+      if (!agreed) { alert('请阅读并勾选同意用户服务协议'); return; }
+      if (Users.find(u=>u.phone===phone)) { alert('该手机号已被注册'); return; }
+      const newUser = { user_id: nextUserId++, username, phone, password: pwd };
+      Users.push(newUser); Goals.push({ goal_id: nextGoalId++, user_id: newUser.user_id, target_type: '维持体重', target_value: 0 });
+      currentUser = { user_id: newUser.user_id, username: newUser.username, phone: newUser.phone };
+      updateAuthUI();
+      document.getElementById('regUsername').value=''; document.getElementById('regPhone').value=''; document.getElementById('regPassword').value='';
+      agreeCheckbox.checked=false;
+      regCaptchaInput.value = '';
+      refreshRegCaptcha();
+    });
+
+    logoutMainBtn.addEventListener('click', ()=>{ currentUser = null; updateAuthUI(); });
+
+    addDietBtn.addEventListener('click', ()=>{
+      if (!currentUser) return;
+      const name = foodNameInp.value.trim();
+      const cal = parseInt(foodCalInp.value);
+      const date = foodDateInp.value;
+      if (!validateName(name)) { alert('食物名称需包含中文或英文，2-30个字符，不能为纯数字或纯符号'); return; }
+      if (isNaN(cal) || cal < 1 || cal > 5000) { alert('卡路里需为1-5000之间的整数'); return; }
+      if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) { alert('请选择有效日期'); return; }
+      if (date > getTodayStr()) { alert('日期不能超过今天'); return; }
+      DietRecords.push({ diet_id: nextDietId++, user_id: currentUser.user_id, food_name: name, calories: cal, date });
+      renderDietExerciseLists(); updateStatisticsAndChart();
+      foodNameInp.value = ''; foodCalInp.value = '';
+    });
+
+    addExerciseBtn.addEventListener('click', ()=>{
+      if (!currentUser) return;
+      const name = exerciseNameInp.value.trim();
+      const cal = parseInt(exerciseCalInp.value);
+      const date = exerciseDateInp.value;
+      if (!validateName(name)) { alert('运动类型需包含中文或英文，2-30个字符，不能为纯数字或纯符号'); return; }
+      if (isNaN(cal) || cal < 1 || cal > 5000) { alert('卡路里需为1-5000之间的整数'); return; }
+      if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) { alert('请选择有效日期'); return; }
+      if (date > getTodayStr()) { alert('日期不能超过今天'); return; }
+      ExerciseRecords.push({ exercise_id: nextExerciseId++, user_id: currentUser.user_id, type: name, calories_burned: cal, date });
+      renderDietExerciseLists(); updateStatisticsAndChart();
+      exerciseNameInp.value = ''; exerciseCalInp.value = '';
+    });
+
+    generateWeek.addEventListener('click', generateReport);
+    refreshBtn.addEventListener('click', ()=>{ renderDietExerciseLists(); updateStatisticsAndChart(); });
+
+    const todayStr = getTodayStr();
+    if (foodDateInp) foodDateInp.value = todayStr;
+    if (exerciseDateInp) exerciseDateInp.value = todayStr;
+
+    refreshLoginCaptcha();
+    refreshRegCaptcha();
+
+    if (!currentUser) { updateAuthUI(); }
+    else { const demo = Users.find(u=>u.phone==='13800138000'); if(demo) currentUser = { user_id: demo.user_id, username: demo.username, phone: demo.phone }; updateAuthUI(); }
+  })();
+</script>
+</body>
+</html>
